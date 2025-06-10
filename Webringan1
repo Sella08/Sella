@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Home DC Control System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 28px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+
+        .status-indicator.online {
+            background-color: #4CAF50;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.offline {
+            background-color: #f44336;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .house-section {
+            background-color: #fafafa;
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid #ddd;
+        }
+
+        .house-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Control Panel Styles */
+        .control-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .panel {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #dee2e6;
+        }
+
+        .panel h3 {
+            color: #495057;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        /* Device Controls */
+        .device-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .device-card {
+            background-color: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            transition: box-shadow 0.3s;
+        }
+
+        .device-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .device-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .device-name {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 25px;
+            cursor: pointer;
+        }
+
+        .toggle-switch input {
+            display: none;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            border-radius: 25px;
+            transition: 0.4s;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 19px;
+            width: 19px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            border-radius: 50%;
+            transition: 0.4s;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: #2196F3;
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(25px);
+        }
+
+        .device-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .metric {
+            text-align: center;
+            padding: 8px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .metric-value {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* Battery Display */
+        .battery-container {
+            margin: 15px 0;
+        }
+
+        .battery-bar {
+            width: 100%;
+            height: 40px;
+            background-color: #e0e0e0;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .battery-fill {
+            height: 100%;
+            background: linear-gradient(to right, #4CAF50, #8BC34A);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .battery-info {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .info-item {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .info-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* System Status */
+        .system-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .status-card {
+            background-color: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        /* SVG Styles */
+        .lamp {
+            cursor: pointer;
+        }
+        
+        .lamp circle {
+            transition: all 0.3s ease;
+        }
+        
+        .lamp.active circle {
+            fill: #FFD700 !important;
+            stroke: #FFA500 !important;
+            filter: drop-shadow(0 0 15px #FFD700);
+        }
+
+        .fan {
+            cursor: pointer;
+        }
+        
+        .fan path,
+        .fan line {
+            transition: all 0.3s ease;
+        }
+        
+        .fan.active path,
+        .fan.active line {
+            stroke: #2196F3 !important;
+        }
+        
+        .fan.active .fan-blades {
+            animation: rotate 1s linear infinite;
+            transform-origin: center;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Smart Home DC Control System 
+                <span class="status-indicator" id="connectionStatus"></span>
+            </h1>
+            <p id="connectionText">Connecting to ESP8266...</p>
+        </header>
+
+        <div class="main-content">
+            <!-- House Layout Section -->
+            <div class="house-section">
+                <h2 style="text-align: center; margin-bottom: 20px;">Layout Rumah</h2>
+                <div class="house-container">
+                    <svg width="600" height="750" viewBox="0 0 800 1000" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Background -->
+                        <rect width="800" height="1000" fill="#f8f8f8"/>
+                        
+                        <!-- Outer walls -->
+                        <rect x="50" y="100" width="700" height="800" fill="white" stroke="#000" stroke-width="12"/>
+                        
+                        <!-- Dapur dan Ruang Makan -->
+                        <g>
+                            <rect x="50" y="100" width="700" height="350" fill="white" stroke="#000" stroke-width="12"/>
+                            <text x="400" y="250" text-anchor="middle" font-size="28" font-weight="bold">Dapur dan</text>
+                            <text x="400" y="285" text-anchor="middle" font-size="28" font-weight="bold">Ruang Makan</text>
+                            
+                            <!-- Lampu 5 -->
+                            <g class="lamp" id="L5" onclick="toggleDevice('L5')">
+                                <circle cx="400" cy="200" r="25" fill="none" stroke="#000" stroke-width="3"/>
+                                <line x1="385" y1="185" x2="415" y2="215" stroke="#000" stroke-width="3"/>
+                                <line x1="385" y1="215" x2="415" y2="185" stroke="#000" stroke-width="3"/>
+                                <text x="400" y="165" text-anchor="middle" font-size="24" font-weight="bold">L5</text>
+                            </g>
+                        </g>
+                        
+                        <!-- Internal walls -->
+                        <line x1="50" y1="450" x2="750" y2="450" stroke="#000" stroke-width="12"/>
+                        <line x1="350" y1="450" x2="350" y2="700" stroke="#000" stroke-width="12"/>
+                        <line x1="350" y1="700" x2="550" y2="700" stroke="#000" stroke-width="12"/>
+                        <line x1="550" y1="450" x2="550" y2="750" stroke="#000" stroke-width="12"/>
+                        <line x1="350" y1="750" x2="350" y2="900" stroke="#000" stroke-width="12"/>
+                        <line x1="550" y1="750" x2="550" y2="900" stroke="#000" stroke-width="12"/>
+                        
+                        <!-- WC -->
+                        <g>
+                            <text x="200" y="580" text-anchor="middle" font-size="28" font-weight="bold">WC</text>
+                            
+                            <!-- Lampu 4 -->
+                            <g class="lamp" id="L4" onclick="toggleDevice('L4')">
+                                <circle cx="200" cy="500" r="25" fill="none" stroke="#000" stroke-width="3"/>
+                                <line x1="185" y1="485" x2="215" y2="515" stroke="#000" stroke-width="3"/>
+                                <line x1="185" y1="515" x2="215" y2="485" stroke="#000" stroke-width="3"/>
+                                <text x="200" y="465" text-anchor="middle" font-size="24" font-weight="bold">L4</text>
+                            </g>
+                        </g>
+                        
+                        <!-- Kamar -->
+                        <g>
+                            <text x="200" y="810" text-anchor="middle" font-size="28" font-weight="bold">Kamar</text>
+                            
+                            <!-- Lampu 3 -->
+                            <g class="lamp" id="L3" onclick="toggleDevice('L3')">
+                                <circle cx="150" cy="750" r="25" fill="none" stroke="#000" stroke-width="3"/>
+                                <line x1="135" y1="735" x2="165" y2="765" stroke="#000" stroke-width="3"/>
+                                <line x1="135" y1="765" x2="165" y2="735" stroke="#000" stroke-width="3"/>
+                                <text x="150" y="715" text-anchor="middle" font-size="24" font-weight="bold">L3</text>
+                            </g>
+                            
+                            <!-- Kipas 1 -->
+                            <g class="fan" id="K1" onclick="toggleDevice('K1')">
+                                <g transform="translate(250, 850)">
+                                    <circle r="30" fill="none" stroke="#000" stroke-width="3"/>
+                                    <g class="fan-blades">
+                                        <line x1="0" y1="-25" x2="0" y2="25" stroke="#3498db" stroke-width="4"/>
+                                        <line x1="-25" y1="0" x2="25" y2="0" stroke="#3498db" stroke-width="4"/>
+                                        <line x1="-18" y1="-18" x2="18" y2="18" stroke="#3498db" stroke-width="4"/>
+                                        <line x1="-18" y1="18" x2="18" y2="-18" stroke="#3498db" stroke-width="4"/>
+                                        <circle r="5" fill="#3498db"/>
+                                    </g>
+                                </g>
+                                <text x="250" y="895" text-anchor="middle" font-size="20" font-weight="bold">K1</text>
+                            </g>
+                        </g>
+                        
+                        <!-- Ruang Tamu -->
+                        <g>
+                            <text x="650" y="580" text-anchor="middle" font-size="28" font-weight="bold">Ruang</text>
+                            <text x="650" y="615" text-anchor="middle" font-size="28" font-weight="bold">Tamu</text>
+                            
+                            <!-- Lampu 2 -->
+                            <g class="lamp" id="L2" onclick="toggleDevice('L2')">
+                                <circle cx="600" cy="500" r="25" fill="none" stroke="#000" stroke-width="3"/>
+                                <line x1="585" y1="485" x2="615" y2="515" stroke="#000" stroke-width="3"/>
+                                <line x1="585" y1="515" x2="615" y2="485" stroke="#000" stroke-width="3"/>
+                                <text x="600" y="465" text-anchor="middle" font-size="24" font-weight="bold">L2</text>
+                            </g>
+                            
+                            <!-- Kipas 2 -->
+                            <g class="fan" id="K2" onclick="toggleDevice('K2')">
+                                <g transform="translate(700, 650)">
+                                    <circle r="30" fill="none" stroke="#000" stroke-width="3"/>
+                                    <g class="fan-blades">
+                                        <line x1="0" y1="-25" x2="0" y2="25" stroke="#3498db" stroke-width="4"/>
+                                        <line x1="-25" y1="0" x2="25" y2="0" stroke="#3498db" stroke-width="4"/>
+                                        <line x1="-18" y1="-18" x2="18" y2="18" stroke="#3498db" stroke-width="4"/>
+                                        <line x1="-18" y1="18" x2="18" y2="-18" stroke="#3498db" stroke-width="4"/>
+                                        <circle r="5" fill="#3498db"/>
+                                    </g>
+                                </g>
+                                <text x="700" y="695" text-anchor="middle" font-size="20" font-weight="bold">K2</text>
+                            </g>
+                        </g>
+                        
+                        <!-- Teras -->
+                        <g>
+                            <text x="450" y="835" text-anchor="middle" font-size="28" font-weight="bold">Teras</text>
+                            
+                            <!-- Lampu 1 -->
+                            <g class="lamp" id="L1" onclick="toggleDevice('L1')">
+                                <circle cx="450" cy="780" r="25" fill="none" stroke="#000" stroke-width="3"/>
+                                <line x1="435" y1="765" x2="465" y2="795" stroke="#000" stroke-width="3"/>
+                                <line x1="435" y1="795" x2="465" y2="765" stroke="#000" stroke-width="3"/>
+                                <text x="520" y="785" text-anchor="middle" font-size="24" font-weight="bold">L1</text>
+                            </g>
+                        </g>
+                        
+                        <!-- Doors -->
+                        <path d="M 350 520 Q 280 520 280 450" fill="none" stroke="#ff0000" stroke-width="3"/>
+                        <path d="M 350 770 Q 420 770 420 700" fill="none" stroke="#ff0000" stroke-width="3"/>
+                        <path d="M 480 700 Q 480 630 550 630" fill="none" stroke="#ff0000" stroke-width="3"/>
+                        
+                        <!-- Main entrance -->
+                        <line x1="350" y1="900" x2="550" y2="900" stroke="#000" stroke-width="12" stroke-dasharray="30,30"/>
+                        
+                        <!-- Windows -->
+                        <rect x="400" y="96" width="100" height="8" fill="#00ff00"/>
+                        <rect x="746" y="200" width="8" height="100" fill="#00ff00"/>
+                        <rect x="746" y="550" width="8" height="100" fill="#00ff00"/>
+                        <rect x="200" y="896" width="100" height="8" fill="#00ff00"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Control Section -->
+            <div class="control-section">
+                <!-- Battery Status -->
+                <div class="panel">
+                    <h3>Status Baterai</h3>
+                    <div class="battery-container">
+                        <div class="battery-bar">
+                            <div class="battery-fill" id="batteryFill" style="width: 75%">75%</div>
+                        </div>
+                        <div class="battery-info">
+                            <div class="info-item">
+                                <div class="info-label">Kapasitas</div>
+                                <div class="info-value" id="batteryCapacity">150 Ah</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Tegangan</div>
+                                <div class="info-value" id="batteryVoltage">12.6 V</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Status</div>
+                                <div class="info-value" id="batteryStatus">Discharging</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Runtime</div>
+                                <div class="info-value" id="runtime">8.5 jam</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Device Controls -->
+                <div class="panel">
+                    <h3>Kontrol Perangkat</h3>
+                    <div class="device-grid">
+                        <!-- Lampu 1 -->
+                        <div class="device-card">
+                            <div class="device-header">
+                                <span class="device-name">💡 Lampu Teras (L1)</span>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="toggleL1" onchange="toggleDevice('L1')">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="device-metrics">
+                                <div class="metric">
+                                    <div class="metric-label">Daya</div>
+                                    <div class="metric-value" id="powerL1">0W</div>
+                                </div>
+                                <div class="metric">
+                                    <div class="metric-label">Arus</div>
+                                    <div class="metric-value" id="currentL1">0A</div>
+                                </div>
+                                <div class="metric">
+                                    <div class="metric-label">Tegangan</div>
+                                    <div class="metric-value" id="voltageL1">0V</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Lampu 2 -->
+                        <div class="device-card">
+                            <div class="device-header">
+                                <span class="device-name">💡 Lampu Ruang Tamu (L2)</span>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="toggleL2" onchange="toggleDevice('L2')">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="device-metrics">
+                                <div class="metric">
+                                    <div class="metric-label">Daya</div>
+                                    <div class="metric-value" id="powerL2">0W</div>
+                                </div>
+                                <div class="metric">
+                                    <div class="metric-label">Arus</div>
+                                    <div class="metric-value" id="currentL2">0A</div>
+                                </div>
+                                <div class="metric">
+                                    <div class="metric-label">Tegangan</div>
+                                    <div class="metric-value" id="voltageL2">0V</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Lampu 3 -->
+                        <div class="device-card">
+                            <div class="device-header">
+                                <span class="device-name">💡 Lampu Kamar (L3)</span>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="toggleL3" onchange="toggleDevice('L3')">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="device-metrics">
+                                <div class="metric">
+                                    <div class="metric-label">Daya</div>
+                                    <div class="metric-value" id="powerL3">0W</div>
+                                </div>
+                                <div class="metric">
+                                    <div class="metric-label">Arus</div>
+                                    <div class="metric-value" id="currentL3">0A</div>
+                                </div>
+                                <div class="metric">
+                                    <div class="metric-label">Tegangan</div>
+                                    <div class="metric-value" id="voltageL3">0V</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Lampu 4 -->
+                        <div class="device-card">
+                            <div class="device-header">
+                                <span class="device-name">💡 Lampu WC (L4)</span>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="toggleL4" onchange="toggleDevice('L4')">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="device-metrics">
+                                <div class="metric">
+                                    <div class="metric-label">Daya</div>
+                                    <div class="metric-value" id="powerL4">0W</div>
+                                </div>
+                                <div class="metric">
+                                    <div class="metric-label">Arus</div>
+                                    <div class="metric-value" id="currentL4">0A</div>
+                                </div>
+                                <div class="metric">
+                                    <div class="metric-label">Tegangan</div>
+                                    <div class="metric-value" id="voltageL4">0V</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Lampu 5 -->
+                        <div class="device-card">
+                            <div class="device-header">
+                                <span class="device-name">💡 Lampu Dapur (L5)</span>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="toggleL5" onchange="toggleDevice('L5')">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="device-metrics">
+                                <div class="metric">
+                                    <div class="metric-label">Daya</div>
+                                    <div class="metric-value" id="powerL5">0W</div>
+                                </div>
+                                <div class="metric">
+                                    <div class="metric-label">Arus</div>
+                                    <div class="metric-value" id="currentL5">0A</div>
+                                </div>
+                                <div class="metric">
+                                    <div class="metric-label">Tegangan</div>
+                                    <div class="metric-value" id="voltageL5">0V</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Kipas 1 -->
+                        <div class="device-card">
+                            <div class="device-header">
+                                <span class="device-name">🌀 Kipas Kamar (K1)</span>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="toggleK1" onchange="toggleDevice('K1')">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="device-metrics">
+                                <div class="metric">
+                                    <div class="metric-label">Daya</div>
+                                    <div class="metric-value" id="powerK1">0W</div>
+                                </div>
+                                <div class="metric">
+                                    <div class="metric-label">Arus</div>
+                                    <div class="metric-value" id="currentK1">0A</div>
+                                </div>
+                                <div class="metric">
+                                    <div class="metric-label">Tegangan</div>
+                                    <div class="metric-value" id="voltageK1">0V</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Kipas 2 -->
+                        <div class="device-card">
+                            <div class="device-header">
+                                <span class="device-name">🌀 Kipas Ruang Tamu (K2)</span>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="toggleK2" onchange="toggleDevice('K2')">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="device-metrics">
+                                <div class="metric">
+                                    <div class="metric-label">Daya</div>
+                                    <div class="metric-value" id="powerK2">0W</div>
+                                </div>
+                                <div class="metric">
+                                    <div class="metric-label">Arus</div>
+                                    <div class="metric-value" id="currentK2">0A</div>
+                                </div>
+                                <div class="metric">
+                                    <div class="metric-label">Tegangan</div>
+                                    <div class="metric-value" id="voltageK2">0V</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Status -->
+                <div class="panel">
+                    <h3>Status Sistem</h3>
+                    <div class="system-grid">
+                        <div class="status-card">
+                            <div class="info-label">Total Daya</div>
+                            <div class="info-value" id="totalPower">0W</div>
+                        </div>
+                        <div class="status-card">
+                            <div class="info-label">Suhu</div>
+                            <div class="info-value" id="temperature">28°C</div>
+                        </div>
+                        <div class="status-card">
+                            <div class="info-label">Cahaya</div>
+                            <div class="info-value" id="lightLevel">250 lux</div>
+                        </div>
+                        <div class="status-card">
+                            <div class="info-label">Mode</div>
+                            <div class="info-value" id="operationMode">Normal</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ESP8266 Configuration
+        const ESP8266_IP = "192.168.1.100"; // Change this to your ESP8266 IP
+        let isConnected = false;
+
+        // Device states and configuration
+        const devices = {
+            L1: { state: false, power: 10, name: "Lampu Teras" },
+            L2: { state: false, power: 30, name: "Lampu Ruang Tamu" },
+            L3: { state: false, power: 20, name: "Lampu Kamar" },
+            L4: { state: false, power: 10, name: "Lampu WC" },
+            L5: { state: false, power: 30, name: "Lampu Dapur" },
+            K1: { state: false, power: 12, name: "Kipas Kamar" },
+            K2: { state: false, power: 12, name: "Kipas Ruang Tamu" }
+        };
+
+        // Battery data
+        let batteryData = {
+            capacity: 200,
+            currentCapacity: 150,
+            voltage: 12.6,
+            isCharging: false
+        };
+
+        // Toggle device from SVG or control panel
+        function toggleDevice(deviceId) {
+            const device = devices[deviceId];
+            device.state = !device.state;
+            
+            // Update toggle switch
+            const toggle = document.getElementById('toggle' + deviceId);
+            if (toggle) toggle.checked = device.state;
+            
+            // Update SVG element
+            const svgElement = document.getElementById(deviceId);
+            if (svgElement) {
+                if (device.state) {
+                    svgElement.classList.add('active');
+                } else {
+                    svgElement.classList.remove('active');
+                }
+            }
+            
+            // Update metrics
+            updateDeviceMetrics(deviceId);
+            updateTotalPower();
+            
+            // Send command to ESP8266
+            sendCommandToESP(deviceId, device.state);
+        }
+
+        // Update device metrics display
+        function updateDeviceMetrics(deviceId) {
+            const device = devices[deviceId];
+            const power = device.state ? device.power : 0;
+            const current = device.state ? (power / batteryData.voltage).toFixed(2) : 0;
+            const voltage = device.state ? batteryData.voltage : 0;
+            
+            document.getElementById('power' + deviceId).textContent = power + 'W';
+            document.getElementById('current' + deviceId).textContent = current + 'A';
+            document.getElementById('voltage' + deviceId).textContent = voltage.toFixed(1) + 'V';
+        }
+
+        // Calculate and update total power consumption
+        function updateTotalPower() {
+            let totalPower = 0;
+            for (let deviceId in devices) {
+                if (devices[deviceId].state) {
+                    totalPower += devices[deviceId].power;
+                }
+            }
+            document.getElementById('totalPower').textContent = totalPower + 'W';
+            
+            // Update battery runtime
+            if (totalPower > 0) {
+                const runtime = (batteryData.currentCapacity * batteryData.voltage) / totalPower;
+                document.getElementById('runtime').textContent = runtime.toFixed(1) + ' jam';
+            } else {
+                document.getElementById('runtime').textContent = '∞';
+            }
+        }
+
+        // Update battery display
+        function updateBatteryDisplay() {
+            const percentage = (batteryData.currentCapacity / batteryData.capacity) * 100;
+            const batteryFill = document.getElementById('batteryFill');
+            
+            batteryFill.style.width = percentage + '%';
+            batteryFill.textContent = percentage.toFixed(0) + '%';
+            
+            // Update battery color based on level
+            if (percentage > 60) {
+                batteryFill.style.background = 'linear-gradient(to right, #4CAF50, #8BC34A)';
+            } else if (percentage > 30) {
+                batteryFill.style.background = 'linear-gradient(to right, #FFC107, #FF9800)';
+            } else {
+                batteryFill.style.background = 'linear-gradient(to right, #f44336, #d32f2f)';
+            }
+            
+            document.getElementById('batteryCapacity').textContent = batteryData.currentCapacity.toFixed(0) + ' Ah';
+            document.getElementById('batteryVoltage').textContent = batteryData.voltage.toFixed(1) + ' V';
+            document.getElementById('batteryStatus').textContent = batteryData.isCharging ? 'Charging' : 'Discharging';
+            
+            // Update operation mode based on battery level
+            let mode = 'Normal';
+            if (percentage < 35) {
+                mode = 'Power Saving';
+            } else if (percentage < 20) {
+                mode = 'Critical';
+            }
+            document.getElementById('operationMode').textContent = mode;
+        }
+
+        // Send command to ESP8266
+        function sendCommandToESP(deviceId, state) {
+            if (!isConnected) {
+                console.log('Not connected to ESP8266');
+                return;
+            }
+            
+            const command = {
+                device: deviceId,
+                state: state ? 1 : 0
+            };
+            
+            // Send HTTP request to ESP8266
+            fetch(`http://${ESP8266_IP}/control`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(command)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Command sent successfully:', data);
+            })
+            .catch(error => {
+                console.error('Error sending command:', error);
+            });
+        }
+
+        // Get data from ESP8266
+        function getDataFromESP() {
+            fetch(`http://${ESP8266_IP}/data`)
+                .then(response => response.json())
+                .then(data => {
+                    // Update connection status
+                    updateConnectionStatus(true);
+                    
+                    // Update device states
+                    if (data.devices) {
+                        for (let deviceId in data.devices) {
+                            if (devices[deviceId]) {
+                                devices[deviceId].state = data.devices[deviceId];
+                                const toggle = document.getElementById('toggle' + deviceId);
+                                if (toggle) toggle.checked = devices[deviceId].state;
+                                
+                                const svgElement = document.getElementById(deviceId);
+                                if (svgElement) {
+                                    if (devices[deviceId].state) {
+                                        svgElement.classList.add('active');
+                                    } else {
+                                        svgElement.classList.remove('active');
+                                    }
+                                }
+                                updateDeviceMetrics(deviceId);
+                            }
+                        }
+                        updateTotalPower();
+                    }
+                    
+                    // Update battery data
+                    if (data.battery) {
+                        batteryData = { ...batteryData, ...data.battery };
+                        updateBatteryDisplay();
+                    }
+                    
+                    // Update sensor data
+                    if (data.sensors) {
+                        document.getElementById('temperature').textContent = data.sensors.temperature + '°C';
+                        document.getElementById('lightLevel').textContent = data.sensors.light + ' lux';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error getting data from ESP8266:', error);
+                    updateConnectionStatus(false);
+                });
+        }
+
+        // Update connection status
+        function updateConnectionStatus(connected) {
+            isConnected = connected;
+            const statusIndicator = document.getElementById('connectionStatus');
+            const connectionText = document.getElementById('connectionText');
+            
+            if (connected) {
+                statusIndicator.classList.add('online');
+                statusIndicator.classList.remove('offline');
+                connectionText.textContent = 'Connected to ESP8266';
+                connectionText.style.color = '#4CAF50';
+            } else {
+                statusIndicator.classList.remove('online');
+                statusIndicator.classList.add('offline');
+                connectionText.textContent = 'Disconnected from ESP8266';
+                connectionText.style.color = '#f44336';
+            }
+        }
+
+        // Initialize the system
+        function initialize() {
+            // Update all device metrics
+            for (let deviceId in devices) {
+                updateDeviceMetrics(deviceId);
+            }
+            
+            // Update displays
+            updateTotalPower();
+            updateBatteryDisplay();
+            
+            // Start polling ESP8266 for data
+            setInterval(getDataFromESP, 2000); // Poll every 2 seconds
+            
+            // Initial connection attempt
+            getDataFromESP();
+        }
+
+        // Start the system when page loads
+        window.onload = initialize;
+
+        /* 
+        ESP8266 Arduino Code Example:
+        
+        #include <ESP8266WiFi.h>
+        #include <ESP8266WebServer.h>
+        #include <ArduinoJson.h>
+        
+        const char* ssid = "YourWiFiSSID";
+        const char* password = "YourWiFiPassword";
+        
+        ESP8266WebServer server(80);
+        
+        // Device pins
+        const int L1_PIN = D1;
+        const int L2_PIN = D2;
+        const int L3_PIN = D3;
+        const int L4_PIN = D4;
+        const int L5_PIN = D5;
+        const int K1_PIN = D6;
+        const int K2_PIN = D7;
+        
+        // Device states
+        bool deviceStates[7] = {false, false, false, false, false, false, false};
+        
+        void setup() {
+            Serial.begin(115200);
+            
+            // Initialize pins
+            pinMode(L1_PIN, OUTPUT);
+            pinMode(L2_PIN, OUTPUT);
+            pinMode(L3_PIN, OUTPUT);
+            pinMode(L4_PIN, OUTPUT);
+            pinMode(L5_PIN, OUTPUT);
+            pinMode(K1_PIN, OUTPUT);
+            pinMode(K2_PIN, OUTPUT);
+            
+            // Connect to WiFi
+            WiFi.begin(ssid, password);
+            while (WiFi.status() != WL_CONNECTED) {
+                delay(500);
+                Serial.print(".");
+            }
+            Serial.println("");
+            Serial.print("Connected to ");
+            Serial.println(ssid);
+            Serial.print("IP address: ");
+            Serial.println(WiFi.localIP());
+            
+            // Setup server routes
+            server.on("/data", HTTP_GET, handleGetData);
+            server.on("/control", HTTP_POST, handleControl);
+            server.enableCORS(true);
+            
+            server.begin();
+            Serial.println("HTTP server started");
+        }
+        
+        void loop() {
+            server.handleClient();
+        }
+        
+        void handleGetData() {
+            StaticJsonDocument<512> doc;
+            
+            // Add device states
+            JsonObject devices = doc.createNestedObject("devices");
+            devices["L1"] = deviceStates[0];
+            devices["L2"] = deviceStates[1];
+            devices["L3"] = deviceStates[2];
+            devices["L4"] = deviceStates[3];
+            devices["L5"] = deviceStates[4];
+            devices["K1"] = deviceStates[5];
+            devices["K2"] = deviceStates[6];
+            
+            // Add battery data (example values - replace with actual readings)
+            JsonObject battery = doc.createNestedObject("battery");
+            battery["currentCapacity"] = 150;
+            battery["voltage"] = 12.6;
+            battery["isCharging"] = false;
+            
+            // Add sensor data (example values - replace with actual sensor readings)
+            JsonObject sensors = doc.createNestedObject("sensors");
+            sensors["temperature"] = 28;
+            sensors["light"] = 250;
+            
+            String response;
+            serializeJson(doc, response);
+            server.send(200, "application/json", response);
+        }
+        
+        void handleControl() {
+            if (server.hasArg("plain")) {
+                String body = server.arg("plain");
+                StaticJsonDocument<200> doc;
+                DeserializationError error = deserializeJson(doc, body);
+                
+                if (!error) {
+                    String device = doc["device"];
+                    int state = doc["state"];
+                    
+                    // Control the appropriate device
+                    if (device == "L1") {
+                        digitalWrite(L1_PIN, state);
+                        deviceStates[0] = state;
+                    } else if (device == "L2") {
+                        digitalWrite(L2_PIN, state);
+                        deviceStates[1] = state;
+                    } else if (device == "L3") {
+                        digitalWrite(L3_PIN, state);
+                        deviceStates[2] = state;
+                    } else if (device == "L4") {
+                        digitalWrite(L4_PIN, state);
+                        deviceStates[3] = state;
+                    } else if (device == "L5") {
+                        digitalWrite(L5_PIN, state);
+                        deviceStates[4] = state;
+                    } else if (device == "K1") {
+                        digitalWrite(K1_PIN, state);
+                        deviceStates[5] = state;
+                    } else if (device == "K2") {
+                        digitalWrite(K2_PIN, state);
+                        deviceStates[6] = state;
+                    }
+                    
+                    server.send(200, "application/json", "{\"status\":\"success\"}");
+                } else {
+                    server.send(400, "application/json", "{\"status\":\"error\",\"message\":\"Invalid JSON\"}");
+                }
+            } else {
+                server.send(400, "application/json", "{\"status\":\"error\",\"message\":\"No data received\"}");
+            }
+        }
+        */
+    </script>
+</body>
+</html>
